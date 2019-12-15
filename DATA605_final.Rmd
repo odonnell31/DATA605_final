@@ -1,0 +1,342 @@
+---
+title: "DATA 605 Final Exam"
+author: "Michael O'Donnell"
+output: html_document
+---
+
+(Problem 1)
+
+Using R, generate a random variable X that has 10,000 random uniform numbers from 1 to N, where N can be any number of your choosing greater than or equal to 6.
+```{r}
+X <- runif(10000, min = 7, max = 107)
+
+hist(X, col = 'skyblue3', breaks = 15)
+```
+
+Then, generate a random variable Y that has 10,000 random normal numbers with a mean of ????????????(N+1)/2
+```{r}
+Y <- rnorm(10000, mean=((107+1)/2))
+
+hist(Y, col = 'skyblue3', breaks = 15)
+```
+
+5 points.
+Calculate as a minimum the below probabilities:
+(letter "x" is estimated as the median of the X variable)
+(letter "y" is estimated as the 1st quartile of the Y variable)
+
+```{r}
+x <- median(X)
+y <- quantile(Y)[[2]]
+```
+
+(a) P(X>x | X>y)
+
+So, the conditional probability of (X > x) given (X > y)
+Further, P((X > x) and (X > y)) / P(X > y)
+```{r}
+Prob1 <- (X > x)
+Prob_X_x <- (length(Prob1[Prob1 == TRUE]))/(length(Prob1))
+
+Prob2 <- (X > y)
+Prob_X_y <- (length(Prob2[Prob2 == TRUE]))/(length(Prob2))
+
+a_prob <- ((Prob_X_x * Prob_X_y))/(Prob_X_y)
+cat("probability of (a):", a_prob)
+```
+
+(b) P(X>x, Y>y)
+
+So, the probability of (X > x) and (Y > y)
+```{r}
+Prob1 <- (X > x)
+Prob_X_x <- (length(Prob1[Prob1 == TRUE]))/(length(Prob1))
+
+Prob2 <- (Y > y)
+Prob_Y_y <- (length(Prob2[Prob2 == TRUE]))/(length(Prob2))
+
+b_prob <- (Prob_X_x)*(Prob_Y_y)
+cat("probability of (b):", b_prob)
+```
+
+(c) P(X<x | X>y)
+
+So, the conditional probability of (X < x) and (X > y)
+Further, P((X < x) and (X > y)) / P(X > y)
+```{r}
+Prob1 <- (X < x)
+Prob_X_x <- (length(Prob1[Prob1 == TRUE]))/(length(Prob1))
+
+Prob2 <- (X > y)
+Prob_X_y <- (length(Prob2[Prob2 == TRUE]))/(length(Prob2))
+
+c_prob <- ((Prob_X_x * Prob_X_y))/(Prob_X_y)
+cat("probability of (c):", c_prob)
+```
+
+
+5 points. Investigate whether P(X>x and Y>y)=P(X>x)P(Y>y)
+by building a table and evaluating the marginal and joint probabilities.
+```{r}
+library(data.table)
+
+Prob1 <- (X > x)
+Prob_X_x <- (length(Prob1[Prob1 == TRUE]))/(length(Prob1))
+
+Prob2 <- (Y > y)
+Prob_Y_y <- (length(Prob2[Prob2 == TRUE]))/(length(Prob2))
+
+#Prob1_and_Prob2 <- 
+  
+#Prob1_x_Prob2 <- 
+
+DT = data.table(
+  ID = c("(X>x)","(Y>y)","(X>x)*(Y>y)","(X>x and Y>y)"),
+  X_x = c(Prob_X_x, Prob_Y_y, Prob_X_x*Prob_Y_y, Prob_X_x*Prob_Y_y),
+  Y_y = c(Prob_Y_y, Prob_X_x, Prob_X_x*Prob_Y_y, Prob_X_x*Prob_Y_y)
+)
+
+DT
+
+#answer: yes, they are equal
+```
+
+Check to see if independence holds by using Fisher's Exact Test and the Chi Square Test.  What is the difference between the two? Which is most appropriate?
+```{r}
+# 2-Way Frequency Table
+Prob1 <- (X > x)
+A <- (length(Prob1[Prob1 == TRUE]))/(length(Prob1))
+
+Prob2 <- (Y > y)
+B <- (length(Prob2[Prob2 == TRUE]))/(length(Prob2))
+
+mytable <- table(A,B) # A will be rows, B will be columns
+mytable # print table
+
+margin.table(mytable, 1) # A frequencies (summed over B)
+margin.table(mytable, 2) # B frequencies (summed over A)
+
+prop.table(mytable) # cell percentages
+prop.table(mytable, 1) # row percentages
+prop.table(mytable, 2) # column percentages
+```
+
+
+
+
+
+
+
+(Problem 2)
+
+Join Kaggle.com and compete in the House Prices: Advanced Regression Techniques competition.  https://www.kaggle.com/c/house-prices-advanced-regression-techniques
+
+5 points.  Descriptive and Inferential Statistics.
+
+Provide univariate descriptive statistics and appropriate plots for the training data set.
+```{r}
+train_df <- read.csv("data/train.csv")
+test_df <- read.csv("data/test.csv", colClasses = c("integer", "integer", "character", "integer", "integer", "character", "character", "character", "character", "character", "character", "character", "character", "character", "character", "character", "character", "integer", "integer", "integer", "integer", "character", "character", "character", "character", "character", "integer", "character", "character", "character", "character", "character", "character", "character", "integer", "character", "integer", "integer", "integer", "character", "character", "character", "character", "integer", "integer", "integer", "integer", "integer", "integer", "integer", "integer", "integer", "integer", "character", "integer", "character", "integer", "character", "character", "integer", "character", "integer", "integer", "character", "character", "character", "integer", "integer", "integer", "integer", "integer", "integer", "character", "character", "character", "integer", "integer", "integer", "character", "character"), header = TRUE, sep = ",", stringsAsFactors = FALSE)
+
+dim(train_df)
+```
+
+```{r}
+# look at data type of each column
+str(train_df)
+```
+
+```{r}
+# view summary statistics of each column
+summary(train_df)
+```
+
+Provide a scatterplot matrix for at least two of the independent variables and the dependent variable.
+independant variable: YearBuilt
+dependant variable: SalePrice
+```{r}
+library(ggplot2)
+
+ggplot(train_df, aes(x = YearBuilt, y = SalePrice)) +
+  geom_point()+
+  geom_smooth(method=lm) +
+  scale_y_continuous(labels = scales::comma)
+```
+
+independant variable: TotRmsAbvGrd
+dependant variable: SalePrice
+```{r}
+ggplot(train_df, aes(x = TotRmsAbvGrd, y = SalePrice)) +
+  geom_jitter()+
+  geom_smooth(method=lm) +
+  scale_y_continuous(labels = scales::comma)
+```
+
+Derive a correlation matrix for any three quantitative variables in the dataset.
+variables: 
+```{r}
+vars <- c("YearBuilt", "YrSold", "LotArea")
+
+corr_matrix <- cor(train_df[vars])
+corr_matrix
+```
+
+Test the hypotheses that the correlations between each pairwise set of variables is 0 and provide an 80% confidence interval.
+```{r}
+
+#cor.test(train_df["YearBuilt"], train_df["YrSold"])
+```
+
+Discuss the meaning of your analysis.  Would you be worried about familywise error? Why or why not?
+
+
+5 points. Linear Algebra and Correlation.
+
+Invert your correlation matrix from above. (This is known as the precision matrix and contains variance inflation factors on the diagonal.) 
+```{r}
+# invert the correlation matrix
+invert_matrix <- solve(corr_matrix)
+invert_matrix
+```
+
+Multiply the correlation matrix by the precision matrix
+```{r}
+# multiply corr matrix by invert matrix
+corr_x_prec_matrix <- corr_matrix %*% invert_matrix
+corr_x_prec_matrix
+```
+
+Then, multiply the precision matrix by the correlation matrix
+```{r}
+# multiply invert matrix by corr matrix
+prec_x_corr_matrix <- invert_matrix %*% corr_matrix  
+prec_x_corr_matrix
+```
+
+Conduct LU decomposition on the matrix.
+```{r}
+#install.packages("matrixcalc")
+library(matrixcalc)
+
+lu.decomposition(prec_x_corr_matrix)
+```
+
+
+
+
+5 points.  Calculus-Based Probability & Statistics.
+
+Select a variable in the Kaggle.com training dataset that is skewed to the right, shift it so that the minimum value is absolutely above zero if necessary.
+```{r}
+hist(train_df$LotArea, col = 'skyblue3', breaks = 25)
+```
+
+Then load the MASS package and run fitdistr to fit an exponential probability density function.  (See  https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/fitdistr.html)
+
+```{r}
+library(MASS)
+
+# account for NA and inf values
+train_df$LotArea[train_df$LotArea==0] <- NA
+train_df$LotArea[train_df$LotArea==Inf] <- 0
+
+fitdistr(train_df$LotArea, densfun="exponential")
+```
+
+Find the optimal value of ??? for this distribution, and then take 1000 samples from this exponential distribution using this value (e.g., rexp(1000, ???)).  Plot a histogram and compare it with a histogram of your original variable
+```{r}
+par(mfrow=c(1,2))    # set the plotting area into a 1*2 array
+hist(rexp(1000, 2.488507e-06), col = 'skyblue3', breaks = 25, main="with optimal lambda")
+hist(train_df$LotArea, col = 'skyblue3', breaks = 25, main="Original Variable")
+```
+
+Using the exponential pdf, find the 5th and 95th percentiles using the cumulative distribution function (CDF).   Also generate a 95% confidence interval from the empirical data, assuming normality.  Finally, provide the empirical 5th percentile and 95th percentile of the data.
+```{r}
+exp_x <- rexp(1000, 2.488507e-06)
+  
+P = ecdf(exp_x)
+plot(P)
+```
+
+
+10 points. Modeling.
+
+Build some type of multiple regression  model and submit your model to the competition board.  Provide your complete model summary and results with analysis.  Report your Kaggle.com user name and score.
+
+To start, I will put together a multiple regression model with many variables, then selectively remove variables that do not have strong p-values
+
+The variables I will start with are: LotArea, LandSlope, BldgType, Neighborhood,
+OverallQual, TotalBsmtSF, Heating, HeatingQC, CentralAir, Electrical, TotRmsAbvGrd, GarageCars,
+Fence, YrSold, SaleType, SaleCondition
+
+```{r}
+# multiple regression model, all variables
+mult_reg_model <- lm(SalePrice ~ LotArea + LandSlope + BldgType + Neighborhood + OverallQual + TotalBsmtSF + Heating + HeatingQC + CentralAir + Electrical + TotRmsAbvGrd + GarageCars + Fence + YrSold + SaleType + SaleCondition + FullBath + HalfBath, data = train_df)
+
+# summary of model
+summary(mult_reg_model)
+```
+
+Now, re-running the model without BldgType, Neighborhood
+```{r}
+# multiple regression model, all variables
+mult_reg_model <- lm(SalePrice ~ LotArea + LandSlope + OverallQual + TotalBsmtSF + Heating + HeatingQC + CentralAir + Electrical + TotRmsAbvGrd + GarageCars + Fence + YrSold + SaleType + SaleCondition + FullBath + HalfBath, data = train_df)
+
+# summary of model
+summary(mult_reg_model)
+```
+
+Now, re-running the model without LandSlope, Elecrtrical, Heating, HeatingQC, CentralAir, Fence, SaleType, SaleCondition
+```{r}
+# multiple regression model, all variables
+mult_reg_model <- lm(SalePrice ~ LotArea + OverallQual + TotalBsmtSF + TotRmsAbvGrd + GarageCars + FullBath + HalfBath, data = train_df)
+
+# summary of model
+summary(mult_reg_model)
+```
+
+```{r}
+mult_reg_model$coefficients
+```
+
+
+Build a function for the multiple regression model, so it can be applied to the test dataset
+```{r}
+# build function for regression model
+mult_reg_model_func <- function(LotArea, OverallQual, TotalBsmtSF, TotRmsAbvGrd, GarageCars, FullBath, HalfBath) { (mult_reg_model$coefficients[[1]] + (mult_reg_model$coefficients[[2]] * LotArea) + (mult_reg_model$coefficients[[3]] * OverallQual) + (mult_reg_model$coefficients[[4]] * TotalBsmtSF) + (mult_reg_model$coefficients[[5]] * GarageCars) + (mult_reg_model$coefficients[[6]] * FullBath) + (mult_reg_model$coefficients[[7]] * HalfBath)) }
+```
+
+Create a residual plot of the model
+```{r}
+# residual plot
+plot(fitted(mult_reg_model), resid(mult_reg_model))
+```
+
+Now, run the model on the testing data
+```{r}
+mult_reg_model_test_data <- mult_reg_model_func(test_df$LotArea, test_df$OverallQual, test_df$TotalBsmtSF, test_df$TotRmsAbvGrd, test_df$GarageCars, test_df$FullBath, test_df$HalfBath)
+```
+
+Check the output mean and median Sale Price's
+```{r}
+cat("mean Sale Price:", mean(mult_reg_model_test_data, na.rm=TRUE))
+cat("median Sale Price:", median(mult_reg_model_test_data, na.rm=TRUE))
+
+# replace NA's with the mean
+mult_reg_model_test_data <- ifelse(is.na(mult_reg_model_test_data) == TRUE, mean(mult_reg_model_test_data, na.rm=TRUE), mult_reg_model_test_data)
+```
+
+Create dataframe of test data predictions to export as csv
+```{r}
+final_df <- data.frame("Id" = test_df$Id, "SalePrice" = mult_reg_model_test_data)
+
+head(final_df)
+```
+
+Export final_df as a csv
+```{r}
+write.csv(final_df, file = "final_df.csv")
+```
+
+Kaggle.com username: odonnell31
+Score: 1.42071, place: 5660
